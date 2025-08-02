@@ -1,6 +1,2 @@
 #!/bin/bash
-# This script prints "hello" followed by the current Linux user's name.
-
-# The `whoami` command prints the effective username of the current user.
-# The command substitution $(...) captures the output of `whoami` and inserts it into the string.
 echo "hello $(whoami)"
