@@ -1,0 +1,2 @@
+#!/bin/bash
+echo $(($(echo "$WATER" | tr 'ewat' '0123' | awk '{s=0; for(i=1;i<=length;i++) s=s*4+substr($0,i,1); print s}') + $(echo "$STIR" | tr 'tir.' '0123' | awk '{s=0; for(i=1;i<=length;i++) s=s*4+substr($0,i,1); print s}'))) | awk '{s="bestchol"; r=""; while($1>0) {r=substr(s,($1%9)+1,1) r; $1=int($1/9)} print r==""?substr(s,1,1):r}'
