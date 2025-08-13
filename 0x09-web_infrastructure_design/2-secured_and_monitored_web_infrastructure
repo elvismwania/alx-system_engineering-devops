@@ -1,0 +1,29 @@
+https://imgur.com/a/7pYuDww
+
+User types www.foobar.com in the browser and hits Enter. Browser resolves app by sending requesting to DNS. DNS points to the Load Balancer's IP address.
+User's browser establishes a secure HTTPS connection with the Load Balancer. The SSL certificate for www.foobar.com is installed on the load balancer, which handles the 
+encryption/decryption. This is known as SSL Termination.
+Each server in the infrastructure is protected by its own firewall. The firewall rules are configured to only allow traffic from expected sources on 
+specific ports (e.g., allow traffic from the load balancer on port 80, but block everything else).
+The load balancer decrypts the HTTPS request and forwards it as a standard HTTP request to one of the three backend servers using a Round Robin algorithm.
+The request is received by a web server (e.g., Server 1).
+The Nginx web server passes it to the application server.
+The application server runs the business logic.
+Each of our servers(Load Balancer, Application & Web Servers, and Database server) are protected by firewall.
+On each of the three servers, a monitoring client (agent) is constantly collecting data—CPU usage, memory, disk space, application logs, Nginx logs, etc.—and sending this data to a centralized monitoring service (like Sumologic).
+
+---
+
+Component Explanations
+Why we added Firewalls: We added a firewall to each server to act as a security checkpoint. It filters all incoming and outgoing network traffic, blocking suspicious requests and protecting our servers from being attacked.
+Why we added an SSL Certificate: The SSL certificate allows us to use HTTPS. This encrypts all data between the user and our website, which is essential for protecting sensitive information like passwords and personal data. It also proves to the user that our site is legitimate.
+Why we added Monitoring: We added monitoring so we can track the health and performance of our infrastructure. It helps us see problems like high CPU usage or low disk space and sends us alerts so we can fix issues before the site goes down.
+How Monitoring Collects Data: It works using a small software agent installed on each server. This agent gathers system metrics (like CPU and RAM), reads log files from Nginx and our application, and sends all this information to a central monitoring service.
+How to Monitor Web Server QPS: To track Queries Per Second (QPS), we would tell our monitoring agent to read the Nginx access log. Every line in that file is a request, so by counting the lines per second, the agent can give us a real-time QPS metric.
+
+---
+
+Issues with this Infrastructure
+Why terminating SSL at the load balancer is an issue: While the connection from the user to our load balancer is secure, the connection from the load balancer to our web server is plain, unencrypted HTTP. This is a security risk. If an attacker ever got inside our private network, they could easily read all of our internal traffic.
+Why having only one MySQL server capable of accepting writes is an issue: This creates a bottleneck and a Single Point of Failure. All requests that write data have to go to this one server, which can get overloaded. If that single database server fails, users can no longer post or update information on our website.
+Why having servers with all the same components might be a problem: If we had servers where the web, application, and database software were all running on the same machine, they would compete for the same resources (CPU, RAM). A spike in web traffic could slow down the database, and a heavy database query could make the website feel slow. It's also inefficient to scale because if you only need more database power, you're forced to add a whole new server with web and app components you don't need.

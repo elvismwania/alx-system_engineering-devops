@@ -1,0 +1,44 @@
+https://imgur.com/a/8gpXhoe
+
+User types www.foobar.com into their browser. The DNS resolves this domain name to the public IP address of the Load Balancer.
+Browser sends request to our server and our load balancer is the new entry point for all traffic. Its job is to distribute incoming requests across the two web servers.
+The load balancer forwards the request to one of the two identical web servers (e.g., Server 1). Each server runs Nginx, has the same set of application files, and runs an application server.
+The web server passes the request to the application server, which runs the code.
+The application server connects to the dedicated database server (Server 3) to read or write data.
+The response is sent back through the same chain: from the database to the application server, to the web server, and finally back to the user's browser. 
+The load balancer does not interfere with the response path.
+
+---
+
+Additions:
+Load Balancer (HAproxy): 
+We add a load balancer to distribute incoming traffic across multiple servers. This prevents any single web server from being overwhelmed, 
+increasing the website's capacity (scalability). It also provides high availability; if one web server fails, the load balancer will stop sending traffic to it and the site remains online.
+Second Web/Application Server: We add a second server that is identical to the first one to create redundancy. This allows the load balancer to share traffic between them and ensures that
+there is no single point of failure at the web/application layer. This is crucial for performing maintenance or deploying new code without downtime.
+
+Load Balancer Algorithm:
+A common and simple algorithm is Round Robin. In this configuration, the load balancer distributes requests sequentially to each server in the pool. The first request goes to Server 1, 
+the second to Server 2, the third back to Server 1, and so on. This ensures that, under normal conditions, both servers receive an equal amount of traffic.
+
+Is our load-balancer enabling an Active-Active or Active-Passive setup?
+Our design enables an Active-Active setup.
+Active-Active: Both web servers are online and actively handling traffic at the same time. This improves performance and makes efficient use of resources.
+Active-Passive: In contrast, an Active-Passive setup would have one server (the active one) handling 100% of the traffic, while a second server (the passive or standby one) is idle. 
+The passive server only takes over if the active one fails. Our design is more efficient because both servers are always contributing.
+
+How a database Primary-Replica (Master-Slave) cluster works:
+A Primary-Replica cluster consists of at least two database servers. The Primary (or Master) node handles all write operations (like INSERT, UPDATE, DELETE). The Primary node logs all 
+these changes. The Replica (or Slave) nodes read this log from the Primary and apply the exact same changes to their own copy of the data. 
+This keeps the Replica databases synchronized with the Primary.
+
+What is the difference between the Primary node and the Replica node in regard to the application?
+The application must be configured to differentiate between the nodes. All database queries that write or modify data must be sent to the Primary node. 
+Database queries that only read data can be sent to the Replica nodes. This strategy improves performance by distributing the database load, as read operations are often more frequent than writes.
+
+---
+
+Issues with our Infrastructure:
+SPOF: The introduction of a second web server has allowed it to not be an SPOF, however we still only have one load balance, one application server, and one database. Hence these 3 components are SPOF's.
+Security Issues: The servers are likely exposed to the public internet without a firewall. Traffic between the user's browser and our load balancer is sent over HTTP, which is unencrypted plain text.
+We also have no monitoring & no way to track the health and performance of our servers

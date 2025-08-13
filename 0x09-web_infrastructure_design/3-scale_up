@@ -1,0 +1,16 @@
+https://imgur.com/a/rTU40Ei
+
+When a user visits www.foobar.com, the DNS points them to a special virtual IP address that belongs to our load balancer cluster.
+This cluster has two load balancers: one Active and one Passive. The Active one handles all the traffic, while the Passive one just stands by, ready to take over instantly if the Active one fails. This setup removes the load balancer as a single point of failure.
+The Active load balancer receives the secure HTTPS request and forwards it to one of our two dedicated web servers. This web server tier is only responsible for handling web traffic (like serving images) and passing requests along.
+If the request is for dynamic content, the web server forwards it to one of our two dedicated application servers. This tier is only responsible for running our application code, which keeps it separate and allows it to be scaled independently.
+The application server then connects to our database tier to read or write data. For any write operations, it connects to the Database Primary. For read operations, it can connect to the Database Replica. This spreads the database load and provides redundancy.
+Finally, the response travels all the way back through the chain to the user. Every server in this entire infrastructure is protected by its own firewall and is constantly watched by a monitoring client.
+
+---
+
+Specifics of the New Infrastructure
+Why we added a second Load Balancer (in a cluster): We did this to eliminate the load balancer as a Single Point of Failure. In our previous design, if the load balancer crashed, the whole site would go down. Now, with an Active-Passive cluster, if the Active server fails, the Passive server automatically takes its place and traffic continues to flow without any interruption.
+Why we split the components onto their own servers: We split the Web, Application, and Database layers onto their own dedicated servers for two main reasons:
+Independent Scaling: If our website gets slow because the application code is struggling, we can add more application servers without touching the web or database tiers. If we are serving lots of large images, we can add more web servers. This is much more efficient and cost-effective.
+No Resource Contention: In the old setup, the database and the web server competed for the same CPU and RAM. Now, the database has all the server's resources to itself, ensuring that a spike in web traffic can't slow down a critical database query. This makes performance much more stable and predictable.

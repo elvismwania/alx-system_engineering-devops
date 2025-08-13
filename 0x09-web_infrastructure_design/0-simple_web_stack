@@ -1,0 +1,25 @@
+https://imgur.com/a/Iq9qQdU
+
+User types www.foobar.com into the browser and hits Enter.
+The browser checks the cache for the ip of www.foobar.com. If it doesn't find there, it sends a request to DNS to resolve this.
+Once the DNS returns the ip address the browser sends a request to access our web app.
+The browser hits our nginx server.
+The nginx server checks the request and sends it to the application server.
+The application server communicates with the database if necessary to retrieve or store data.
+The application server then sends a response to our nginx server.
+The nginx server sends the response back to the browser.
+The browser displays the response to the user.
+
+Component Terms:
+Server: A physical or hardware computer that is used solely for sharing files or other services. It can only be accessed over a network.
+Domain name: The human-friendly name of our website used as an alias to the machine-friendly name or identifier known ip address.
+Web Server: A software that handles HTTP/HTTPS requests and serves static content like HTML, CSS and images. It can also act as a reverse proxy and forward requests to our application server.
+Application Server: The server which hosts and executes web application logic. It handles dynamic requests that the web server cannot handle alone.
+Database: Storage of data.
+Communication: The server communicates with the client through using HTTP/HTTPS protocol which runs on the TCP/IP network protocol.
+
+Issues with our Infrastructure:
+SOF: Single Point of Failure(SPOF) is any single component in our system whose failure will cause disruption in the delivery of our services. In our infrastructure, we have one web server,
+one application server and one database. Hence every one of those is an SPOF.
+Downtime: If any part of our application needs maintenance or servicing, this will cause immediate disruption of our delivery.
+Scaling: The infrastructure cannot handle a surge in traffic. Since there is only one server, all of the resources(CPU, RAM, Storage) are shared b/n all components. We would need to either upgrade the server (vertical scaling) or add more servers (horizontal scaling)
